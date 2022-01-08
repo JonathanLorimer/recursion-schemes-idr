@@ -2,6 +2,7 @@ module Examples
 
 import Interfaces
 import Schemes
+import Implementations
 
 %hide Prelude.Nat
 %hide Prelude.List
@@ -13,18 +14,8 @@ record Fix (f : Type -> Type) where
     unfix : f (Fix f)
 
 public export
-data NatF : Type -> Type where
-  ZeroF : NatF r
-  SuccF : r -> NatF r
-
-public export
 Nat : Type
 Nat = Fix NatF
-
-public export
-implementation Functor NatF where
-  map f ZeroF = ZeroF
-  map f (SuccF x) = SuccF (f x)
 
 public export
 implementation Recursive NatF Nat where
@@ -43,11 +34,6 @@ succ : Nat -> Nat
 succ = Fx . SuccF
 
 public export
-data ListF : (0 _ : Type) -> Type -> Type where
-  NilF : ListF a r
-  ConsF : a -> r -> ListF a r
-
-public export
 List : Type -> Type
 List a = Fix (ListF a)
 
@@ -58,11 +44,6 @@ nil = Fx NilF
 public export
 cons : a -> List a -> List a
 cons x xs = Fx $ ConsF x xs
-
-public export
-implementation Functor (ListF a) where
-  map f NilF = NilF
-  map f (ConsF x xs) = ConsF x (f xs)
 
 public export
 implementation {0 a: _} -> Recursive (ListF a) (List a) where
