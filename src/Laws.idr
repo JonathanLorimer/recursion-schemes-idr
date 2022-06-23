@@ -1,9 +1,8 @@
 module Laws
 
-import Interfaces
-
 public export
 interface Functor f => LawfulFunctor f where
+  constructor MkLawful
   mapIdent : (x: f a) -> map Prelude.id x = Prelude.id x
   mapCompose : { 0 g : b -> c } -> { 0 h : a -> b } ->
                (x: f a) -> map (g . h) x = (map g . map h) x

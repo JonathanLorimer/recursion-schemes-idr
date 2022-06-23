@@ -3,6 +3,7 @@ module Examples
 import Interfaces
 import Schemes
 import Implementations
+import Laws
 
 %hide Prelude.Stream.(::)
 
@@ -10,8 +11,6 @@ public export
 data NatF : Type -> Type where
   ZeroF : NatF r
   SuccF : r -> NatF r
-
--- data NatF r = ZeroF | SuccF r
 
 public export
 implementation Functor NatF where
@@ -29,26 +28,24 @@ implementation FixpointIsomorphism NatF Nat where
   generalize Z = Fx ZeroF
   generalize (S n) = Fx $ SuccF (generalize n)
 
-implementation InitialAlgebra NatF where
-  -- iaHomomorphism alg h g ZeroF (Fx ZeroF) =
-  --   let uniqueH = ?uniquH
-  --       homo = ?homo
-  --   in (uniqueH, homo)
-  -- iaHomomorphism alg h g (SuccF x) (Fx ZeroF) = ?ia_1
-  -- iaHomomorphism alg h g fix (Fx (SuccF x)) = ?iaHomomorphism_2
-  iaHomomorphism alg h ZeroF (Fx ZeroF) =
-    let fx : NatF (Fix NatF) -> Fix NatF
-        fx = Fx
-        total
-        lemm : map h ZeroF = ZeroF
-        lemm = ?lemm
-    in ?iaHomomorphism_3
-  iaHomomorphism alg h ZeroF (Fx (SuccF x)) =
-    ?iaHomomorphism_2
-  iaHomomorphism alg h (SuccF y) x = ?iaHomomorphism_4
+temp : (0 a : _) ->
+       (h : Fix NatF -> a) ->
+       (Prelude.map h) (ZeroF {r=Fix NatF}) = (ZeroF {r=a})
+temp h v = Refl
 
+law : LawfulFunctor NatF
 
+natFIsInitial : InitialAlgebra NatF
+natFIsInitial = MkInit
+  law
+  (\alg, h => \case ZeroF => let v = temp _ h
+                                 p = the (h (Fx ZeroF) = alg (map h ZeroF)) ?hole in p `trans` cong alg (?h)
+                    (SuccF x) => ?a3_1)
 
+  -- iaHomomorphism
+  -- alg h ZeroF = ?ia_0
+  --   -- rewrite cong alg (temp { a = a } h) in ?ia_0
+  -- iaHomomorphism alg h (SuccF x) = ?ia_1
 
 public export
 zero : Nat'
