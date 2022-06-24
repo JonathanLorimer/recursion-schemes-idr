@@ -12,10 +12,37 @@ data NatF : Type -> Type where
   ZeroF : NatF r
   SuccF : r -> NatF r
 
+mapNat : (a -> b) -> NatF a -> NatF b
+mapNat f (ZeroF {r = a}) = ZeroF {r = b}
+mapNat f (SuccF {r = a} x) = SuccF {r = b} (f x)
+
+
 public export
 implementation Functor NatF where
-  map f ZeroF = ZeroF
-  map f (SuccF x) = SuccF (f x)
+  map = mapNat
+
+NatFunctor : MyFunctor NatF
+NatFunctor = MkFunctor mapNat
+
+lemma : (0 a, b, c : Type) -> {0 g : b -> c} -> {0 h : a -> b} ->
+        (x : NatF a) -> Equal {a = NatF c} {b = NatF c}
+        (fmap NatFunctor {b = c} {a = a} (\x : a => g (h x)) x)
+        (fmap NatFunctor {b = c} {a = b} g (fmap NatFunctor {b = b} {a = a} h x))
+lemma _ _ _ (ZeroF {r = a}) = Refl
+lemma _ _ _ (SuccF {r = a} x) = Refl
+
+lemmaId : {0 a : Type} -> (x : NatF a) -> Equal (Examples.mapNat (Prelude.id {a = a}) x ) x
+lemmaId (ZeroF {r = a}) = Refl
+lemmaId (SuccF {r = a} x) = Refl
+
+
+law : LawfulFunctor NatF
+law = MkLawful
+  { func = NatFunctor
+  , mapIdent = lemmaId
+  , mapCompose = lemma
+  }
+
 
 public export
 Nat' : Type
@@ -28,19 +55,21 @@ implementation FixpointIsomorphism NatF Nat where
   generalize Z = Fx ZeroF
   generalize (S n) = Fx $ SuccF (generalize n)
 
-temp : (0 a : _) ->
-       (h : Fix NatF -> a) ->
-       (Prelude.map h) (ZeroF {r=Fix NatF}) = (ZeroF {r=a})
-temp h v = Refl
+cata : MyFunctor f -> (f a -> a) -> Fix f -> a
+cata func alg = alg . func.fmap (cata func alg) . unfix
 
-law : LawfulFunctor NatF
+test : {0 a : Type} -> (alg : NatF a -> a) -> cata NatFunctor alg (Fx ZeroF) = alg ZeroF
+test alg = Refl
+
+lemmaPrf : (alg : (NatF a -> a)) -> (h : (Fix NatF -> a)) -> (fix : NatF (Fix NatF)) -> h (Fx fix) = alg (mapNat h fix)
+lemmaPrf alg h ZeroF = ?huh -- `trans` test {a} alg
+lemmaPrf alg h (SuccF x) = ?lemmaPrf_rhs_1
 
 natFIsInitial : InitialAlgebra NatF
 natFIsInitial = MkInit
-  law
-  (\alg, h => \case ZeroF => let v = temp _ h
-                                 p = the (h (Fx ZeroF) = alg (map h ZeroF)) ?hole in p `trans` cong alg (?h)
-                    (SuccF x) => ?a3_1)
+  { func = law
+  , prf = ?heh
+  }
 
   -- iaHomomorphism
   -- alg h ZeroF = ?ia_0

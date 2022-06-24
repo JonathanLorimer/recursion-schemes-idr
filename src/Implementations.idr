@@ -23,9 +23,11 @@ listfMapCompose : { 0 g : b -> c } -> { 0 h : a -> b } ->
 listfMapCompose NilF = Refl
 listfMapCompose (ConsF x y) = Refl
 
-implementation LawfulFunctor (ListF a) where
-  mapIdent = listfMapIdent
-  mapCompose = listfMapCompose
+ListFunctor :  LawfulFunctor (ListF a)
+ListFunctor = MkLawful
+  (?ma)
+  ?sadlistfMapIdent
+  ?bblistfMapCompose
 
 listMapIdent : (x: List a) -> map Prelude.id x = Prelude.id x
 listMapIdent [] = Refl
@@ -37,9 +39,9 @@ listMapIdent (x :: xs) =
 listMapCompose : { 0 g : b -> c } -> { 0 h : a -> b } ->
                   (x: List a) -> map (g . h) x = (map g . map h) x
 
-implementation LawfulFunctor List where
-  mapIdent = listMapIdent
-  mapCompose = listMapCompose
+-- implementation LawfulFunctor List where
+--   mapIdent = listMapIdent
+--   mapCompose = listMapCompose
 
 -- listCataIdent : (xs : List a) -> (Schemes.cata {f = ListF a} Interfaces.uncarry) xs = id xs
 -- listCataIdent [] = Refl

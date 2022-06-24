@@ -20,7 +20,7 @@ record InitialAlgebra (f : Type -> Type) where
         (alg : f a -> a) ->
         (h : Fix f -> a) ->
         (fix : f (Fix f)) ->
-        h (Fx fix) = alg ((Prelude.map h) fix)
+        h (Fx fix) = alg ((func.func.fmap h) fix)
 
 -- public export
 -- interface FinalCoAlgebra (f : Type -> Type) where
